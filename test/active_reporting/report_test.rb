@@ -31,4 +31,31 @@ class ActiveReporting::ReportTest < Minitest::Test
     refute data.empty?
     assert data.all? { |r| r.key?('a_metric') }
   end
+
+  def test_report_runs_aggregate_with_expression
+    metric = ActiveReporting::Metric.new(
+      :a_metric,
+      fact_model: FigureFactModel,
+      dimensions: [:kind],
+      aggregate: { count: :kind_is_card }
+    )
+    report = ActiveReporting::Report.new(metric)
+    data = report.run
+    data.reject { |d| d['kind'] == 'amiibo card' }.each do |d|
+      assert d['a_metric'].zero?
+    end
+    refute(data.find { |d| d['kind'] == 'amiibo card' }['a_metric'].zero?)
+  end
+
+  def test_report_count_is_zero_with_aggregate_expression
+    metric = ActiveReporting::Metric.new(
+      :a_metric,
+      fact_model: FigureFactModel,
+      dimensions: [:kind],
+      aggregate: { count: :kind_is_foo }
+    )
+    report = ActiveReporting::Report.new(metric)
+    data = report.run
+    assert data.all? { |r| r['a_metric'].zero? }
+  end
 end
