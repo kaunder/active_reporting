@@ -2,6 +2,9 @@ class FigureFactModel < ActiveReporting::FactModel
   dimension :kind
   dimension :series
 
+  aggregate_expression :kind_is_card, "CASE WHEN kind = 'amiibo card' THEN 1 END"
+  aggregate_expression :kind_is_foo, "CASE WHEN kind = 'foo' THEN 1 END"
+
   dimension_filter :kind_is, ->(k) { where(kind: k) }
 end
 
