@@ -46,16 +46,8 @@ class ActiveReporting::MetricTest < Minitest::Test
     assert_equal({:kind => :asc}, metric.order_by_dimension)
   end
 
-  def test_metric_raises_when_using_expression_for_unsupported_aggregate
-    assert_raises ActiveReporting::UnknownAggregate do
-      ActiveReporting::Metric.new(
-        :a, fact_model: FigureFactModel, dimensions: [:kind], aggregate: { sum: :kind_is_card }
-      )
-    end
-  end
-
   def test_metric_raises_when_using_undefined_expression
-    assert_raises ActiveReporting::UnknownAggregate do
+    assert_raises ActiveReporting::UnknownAggregateExpression do
       ActiveReporting::Metric.new(
         :a, fact_model: FigureFactModel, dimensions: [:kind], aggregate: { sum: :foo }
       )
