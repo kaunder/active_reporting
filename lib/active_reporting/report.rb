@@ -76,9 +76,9 @@ module ActiveReporting
     def select_aggregate
       case @metric.aggregate
       when :count
-        "COUNT(#{@metric.aggregate_expression})"
+        "COUNT(#{@metric.aggregate_expression || '*'})"
       else
-        "#{@metric.aggregate.to_s.upcase}(#{fact_model.measure})"
+        "#{@metric.aggregate.to_s.upcase}(#{@metric.aggregate_expression || fact_model.measure})"
       end
     end
 

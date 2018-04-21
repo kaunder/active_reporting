@@ -10,6 +10,7 @@ module ActiveReporting
                 :dimensions,
                 :dimension_filter,
                 :aggregate,
+                :aggregate_expression,
                 :metric_filter,
                 :order_by_dimension
 
@@ -39,12 +40,6 @@ module ActiveReporting
       Report.new(self)
     end
 
-    # Return the specified aggregate expression, defaulting to '*'
-    #
-    def aggregate_expression
-      @aggregate_expression || '*'
-    end
-
     private ####################################################################
 
     def check_dimension_filter
@@ -56,18 +51,15 @@ module ActiveReporting
     def validate_aggregate(agg)
       agg_name, expr = agg.is_a?(Hash) ? Array(agg).flatten : [agg.to_sym, nil]
       raise UnknownAggregate, "Unknown aggregate '#{agg_name}'" unless AGGREGATES.include?(agg_name)
-      validate_agg_expression(agg_name, expr) if expr
+      validate_agg_expression(expr) if expr
       @aggregate = agg_name
       @aggregate_expression = @fact_model.aggregate_expressions[expr]
     end
 
-    def validate_agg_expression(agg_name, expr)
-      if agg_name != :count
-        raise UnknownAggregate, "Currently no aggregate expression support for '#{agg_name}'"
-      elsif @fact_model.aggregate_expressions[expr].nil?
-        raise UnknownAggregate,
-              "Aggregate expression '#{expr}' not defined in '#{@fact_model.name}'"
-      end
+    def validate_agg_expression(expr)
+      return if @fact_model.aggregate_expressions[expr]
+      raise UnknownAggregateExpression,
+            "Aggregate expression '#{expr}' not defined in '#{@fact_model.name}'"
     end
   end
 end
