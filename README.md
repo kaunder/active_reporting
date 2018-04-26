@@ -263,21 +263,20 @@ class TicketFactModel < ActiveReporting::FactModel
 end
 ```
 
-## Configuring Aggregate Expressions for `COUNT`
+## Configuring Aggregate Expressions
 
-If you need more granular control over the `COUNT` aggregate function, you can declare an [aggregate expression](https://www.postgresql.org/docs/8.2/static/functions-aggregate.html) in the fact model. This use case can arise if need multiple aggregates on identical data sets.
+If you need more granular control over any aggregate function (e.g., `SUM`, `COUNT`, `AVG`, etc.), you can declare an [aggregate expression](https://www.postgresql.org/docs/8.2/static/functions-aggregate.html) in the fact model. This use case can arise if you need multiple aggregates on identical data sets, or if creative results are desired from the aggregate function.
 
-The declaration takes the raw SQL expression that
-you want to replace `'*'` in the `COUNT` function:
+The declaration takes the raw SQL expression that you want to use:
 
 ```ruby
 class TicketFactModel < ActiveReporting::FactModel
   aggregate_expression :my_custom_expression,
-                       "CASE WHEN name = 'foo' THEN 1 END"
+                       "CASE WHEN name = 'foo' THEN 5 END"
 end
 ```
 
-Whatever expression you choose, it is important to remember that `COUNT` will aggregate all non-`null` results -- so anything you want to exclude should compute to `null`.
+Whatever expression you choose, it is important to remember that aggregate functions consider all non-`null` results -- so anything you want to exclude should compute to `null`.
 
 ## ActiveReporting::Metric
 
@@ -295,7 +294,7 @@ my_metric = ActiveReporting::Metric.new(
 
 `fact_model` - An `ActiveReporting::FactModel` class
 
-`aggregate` - The SQL aggregate used to calculate the metric. Supported aggregates include count, max, min, avg, and sum. (Default: `:count`.) For `count` aggregates, you can also specify an aggregate expression if you defined one in your fact model: `aggregate: { count: :my_custom_expression }` -- and the expression identified will replace the `'*'` when a query is made using `COUNT`.
+`aggregate` - The SQL aggregate used to calculate the metric. Supported aggregates include count, max, min, avg, and sum. (Default: `:count`.) You can also specify an aggregate expression (discussed above) if you defined one in your fact model: `aggregate: { count: :my_custom_expression }` or `aggregate: { sum: :my_custom_expression }`-- and the expression declared in the fact model will be used by the database in the function (e.g., `SUM(CASE WHEN name = 'foo' THEN 1 END)`).
 
 `dimensions` - An array of dimensions used for the metric. When given just a symbol, the default dimension label will be used for the dimension. You may specify a hierarchy level by using a hash. (Examples: `[:sales_rep, {order_date: :month}]`)
 
