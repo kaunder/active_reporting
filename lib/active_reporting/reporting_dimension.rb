@@ -1,32 +1,21 @@
+# frozen_string_literal: true
+
 require 'forwardable'
 module ActiveReporting
   class ReportingDimension
     extend Forwardable
     SUPPORTED_DBS = %w[PostgreSQL PostGIS].freeze
     # Values for the Postgres `date_trunc` method.
-    # See https://www.postgresql.org/docs/8.1/static/functions-datetime.html#FUNCTIONS-DATETIME-TRUNC
-    DATETIME_HIERARCHIES = %i[microseconds
-                              milliseconds
-                              second
-                              minute
-                              hour
-                              day
-                              week
-                              month
-                              quarter
-                              year
-                              decade
-                              century
-                              millennium].freeze
+    # See https://www.postgresql.org/docs/10/static/functions-datetime.html#FUNCTIONS-DATETIME-TRUNC
+    DATETIME_HIERARCHIES = %i[microseconds milliseconds second minute hour day week month quarter year decade
+                              century millennium].freeze
     def_delegators :@dimension, :name, :type, :klass, :association, :model, :hierarchical?, :datetime?
 
     def self.build_from_dimensions(fact_model, dimensions)
       Array(dimensions).map do |dim|
         dimension_name, label = dim.is_a?(Hash) ? Array(dim).flatten : [dim, nil]
         found_dimension = fact_model.dimensions[dimension_name.to_sym]
-        if found_dimension.nil?
-          raise UnknownDimension, "Dimension '#{dim}' not found on fact model '#{fact_model}'"
-        end
+        raise UnknownDimension, "Dimension '#{dim}' not found on fact model '#{fact_model}'" if found_dimension.nil?
         new(found_dimension, label: label)
       end
     end
@@ -72,7 +61,7 @@ module ActiveReporting
     # @return [String]
     def order_by_statement(direction:)
       direction = direction.to_s.upcase
-      raise "Ording direction should be 'asc' or 'desc'" unless %w(ASC DESC).include?(direction)
+      raise "Ording direction should be 'asc' or 'desc'" unless %w[ASC DESC].include?(direction)
       return "#{degenerate_fragment} #{direction}" if type == Dimension::TYPES[:degenerate]
       "#{label_fragment} #{direction}"
     end
@@ -87,17 +76,19 @@ module ActiveReporting
     private ####################################################################
 
     def determine_label(label)
-      @label = label.to_sym if label.present? && validate_hierarchical_label(label)
-      @label ||= dimension_fact_model.dimension_label || Configuration.default_dimension_label
+      @label = if label.present? && validate_hierarchical_label(label)
+                 label.to_sym
+               else
+                 dimension_fact_model.dimension_label || Configuration.default_dimension_label
+               end
     end
 
     def validate_hierarchical_label(hierarchical_label)
-      validate_dimension_is_hierachical(hierarchical_label) unless datetime?
       if datetime?
         validate_supported_database_for_datetime_hierarchies
         validate_against_datetime_hierarchies(hierarchical_label)
-        @datetime_hierarchical_label = true
       else
+        validate_dimension_is_hierachical(hierarchical_label)
         validate_against_fact_model_properties(hierarchical_label)
       end
       true
@@ -126,19 +117,13 @@ module ActiveReporting
     end
 
     def degenerate_fragment
-      if @datetime_hierarchical_label
-        "#{name}_#{@label}"
-      else
-        "#{model.quoted_table_name}.#{name}"
-      end
+      return "#{name}_#{@label}" if datetime?
+      "#{model.quoted_table_name}.#{name}"
     end
 
     def degenerate_select_fragment
-      if @datetime_hierarchical_label
-        "DATE_TRUNC('#{@label}', #{model.quoted_table_name}.#{name}) AS #{name}_#{@label}"
-      else
-        "#{model.quoted_table_name}.#{name}"
-      end
+      return "DATE_TRUNC('#{@label}', #{model.quoted_table_name}.#{name}) AS #{name}_#{@label}" if datetime?
+      "#{model.quoted_table_name}.#{name}"
     end
 
     def identifier_fragment
