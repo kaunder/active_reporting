@@ -36,6 +36,7 @@ module ActiveReporting
       # (2) Will only work for date/time values greater than the
       #     year 1900.
       # (3) Does not support decade, century, or millenium.
+      #
       def self._active_reporting_date_trunc(datetime_precision_value, value)
         unless valid_datetime_precision_value?(datetime_precision_value)
           raise ArgumentError,
@@ -44,8 +45,8 @@ module ActiveReporting
         interval_precision = datetime_precision_value.upcase
         <<-SQL
           date_add(
-            '1900-01-01',
-            interval TIMESTAMPDIFF(#{interval_precision}, '1900-01-01', #{value}) #{interval_precision}
+            '0001-01-01',
+            interval TIMESTAMPDIFF(#{interval_precision}, '0001-01-01', #{value}) #{interval_precision}
           )
         SQL
         # "ACTIVE_REPORTING_DATE_TRUNC('#{datetime_precision_value}', #{value})"

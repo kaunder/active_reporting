@@ -90,7 +90,6 @@ class ActiveReporting::FunctionAdapters::DateTruncTest < Minitest::Test
     time = Date.parse('1718-09-29').beginning_of_day
 
     result = perform_query('year', time)
-    puts result.first['foo']
     assert_time_effectively_equal(result.first['foo'], '1718-01-01 00:00:00')
   end
 
