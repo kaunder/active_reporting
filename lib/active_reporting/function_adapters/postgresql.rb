@@ -16,7 +16,7 @@ module ActiveReporting
       # value for performing datetime functions.
       #
       def self.valid_datetime_precision_value?(value)
-        datetime_precision_values.include?(value)
+        datetime_precision_values.include?(value.to_sym)
       end
 
       # Generate a date truncation statement in PostgreSQL
@@ -27,7 +27,15 @@ module ActiveReporting
       # @param [String] column_name
       #
       def self.date_truncate(datetime_precision_value, quoted_table_name, column_name)
-        "DATE_TRUNC('#{datetime_precision_value}', #{quoted_table_name}.#{column_name})"
+        _active_reporting_date_trunc(datetime_precision_value, "#{quoted_table_name}.#{column_name}")
+      end
+
+      def self._active_reporting_date_trunc(datetime_precision_value, value)
+        unless valid_datetime_precision_value?(datetime_precision_value)
+          raise ArgumentError,
+                "Interval value #{datetime_precision_value} is not valid for Postgres"
+        end
+        "DATE_TRUNC('#{datetime_precision_value}', #{value})"
       end
     end
   end
