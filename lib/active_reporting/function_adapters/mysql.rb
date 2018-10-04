@@ -31,11 +31,9 @@ module ActiveReporting
       end
 
       # NOTE:
-      # (1) When truncated to day or any greater interval, removes
+      # (1) When truncated to "day" or any greater interval, removes
       #     the trailing "00:00:00" that is provided in Postgres
-      # (2) Will only work for date/time values greater than the
-      #     year 1900.
-      # (3) Does not support decade, century, or millenium.
+      # (2) Does not support decade, century, or millenium.
       #
       def self._active_reporting_date_trunc(datetime_precision_value, value)
         unless valid_datetime_precision_value?(datetime_precision_value)
@@ -49,7 +47,6 @@ module ActiveReporting
             interval TIMESTAMPDIFF(#{interval_precision}, '0001-01-01', #{value}) #{interval_precision}
           )
         SQL
-        # "ACTIVE_REPORTING_DATE_TRUNC('#{datetime_precision_value}', #{value})"
       end
     end
   end

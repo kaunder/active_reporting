@@ -77,7 +77,23 @@ class ActiveReporting::FunctionAdapters::DateTruncTest < Minitest::Test
     assert_time_effectively_equal(result.first['foo'], '2018-09-01 00:00:00')
   end
 
-  def test_date_trunc_returns_quarter_data
+  def test_date_trunc_quarter_data_in_first_month_of_quarter
+    return unless adapter.present?
+    time = Date.parse('2018-07-29').beginning_of_day
+
+    result = perform_query('quarter', time)
+    assert_time_effectively_equal(result.first['foo'], '2018-07-01 00:00:00')
+  end
+
+  def test_date_trunc_quarter_data_in_second_month_of_quarter
+    return unless adapter.present?
+    time = Date.parse('2018-08-29').beginning_of_day
+
+    result = perform_query('quarter', time)
+    assert_time_effectively_equal(result.first['foo'], '2018-07-01 00:00:00')
+  end
+
+  def test_date_trunc_quarter_data_in_third_month_of_quarter
     return unless adapter.present?
     time = Date.parse('2018-09-29').beginning_of_day
 
