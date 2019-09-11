@@ -78,7 +78,8 @@ module ActiveReporting
     def select_aggregate
       case @metric.aggregate
       when :count
-        distinct = "DISTINCT `#{@metric.model.name_without_component.downcase.pluralize}`.`id`"
+        model_name = name_without_prefix(@metric.model).downcase.pluralize
+        distinct = "DISTINCT `#{model_name}`.`id`"
 
         count_params = if @metric.aggregate_expression
                          "#{distinct}, #{@metric.aggregate_expression}"
@@ -155,5 +156,10 @@ module ActiveReporting
         end
       end
     end
+
+    def name_without_prefix(name)
+      name.gsub() YOU ARE HERE
+    end
+
   end
 end
