@@ -56,7 +56,7 @@ module ActiveReporting
     # but without renaming returned columnns with 'AS'
     #
     # @return [ARRAY]
-    def select_statement_no_rename(with_identifier: true) #TODO RENAME THIS BC IT SUCKS
+    def select_statement_no_rename(with_identifier: true)
       return [name] if type == Dimension::TYPES[:degenerate]
 
       ss = ["#{name}"]

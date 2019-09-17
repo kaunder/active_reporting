@@ -70,7 +70,7 @@ module ActiveReporting
         statement = process_lambda_dimension_filter(statement)
         statement = process_ransack_dimension_filter(statement)
 
-        # The original gem did not handle has_many relatinoships. In order to support
+        # The original gem did not handle has_many relationships. In order to support
         # has_many, we need to first do an inner query to select out distinct rows _before_
         # attempting the sum. Therefore we build up the query piece
         # by piece rather than using the basic statement.
