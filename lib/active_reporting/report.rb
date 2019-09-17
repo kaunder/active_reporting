@@ -75,6 +75,7 @@ module ActiveReporting
         # attempting the sum. Therefore we build up the query piece
         # by piece rather than using the basic statement.
 
+        outer_select = outer_select_statement.join(',')
 
         # In some situations the column we're summing over is not included as a part of the aggregation
         # in the inner query. In such cases we must explicitly select the desired column in the inner
@@ -85,9 +86,11 @@ module ActiveReporting
           selection_metric = ''
         end
 
-        # Construct each piece we need for the final query
-        outer_select = outer_select_statement.join(',')
-        inner_columns = inner_select_statement.empty? ? "#{selection_metric}" : ",#{inner_select_statement.join(',')}"
+        inner_columns = ",#{inner_select_statement.join(',')}"
+        if selection_metric && !inner_columns.include?(selection_metric)
+          inner_columns = "#{selection_metric}#{inner_columns}"
+        end
+
         inner_select = "SELECT #{distinct}, #{fact_model.measure.to_s} #{inner_columns}"
         inner_from = statement.to_sql.split('FROM').last
 
